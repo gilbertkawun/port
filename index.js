@@ -30,6 +30,35 @@ const players = new Fighters({
     x: 0,
     y: 0,
   },
+  imgSrc: './sprites/player-1/Idle.png',
+  framesMax: 4,
+  scale: 2.5,
+  offset: {
+    x: 180,
+    y: 180
+  },
+  sprites: {
+    idle: {
+      imgSrc: './sprites/player-1/Idle.png',
+      framesMax: 4
+    },
+    run: {
+      imgSrc: './sprites/player-1/Run.png',
+      framesMax: 8
+    },
+    jump: {
+      imgSrc: './sprites/player-1/Jump.png',
+      framesMax: 2
+    },
+    fall: {
+      imgSrc: './sprites/player-1/Fall.png',
+      framesMax: 2
+    },
+    attack1: {
+      imgSrc: './sprites/player-1/Attack1.png',
+      framesMax: 4
+    }
+  }
 });
 
 const enemies = new Fighters({
@@ -78,15 +107,25 @@ function animate() {
   ce.fillRect(0, 0, canvas.width, canvas.height);
   background.update()
   players.update();
-  enemies.update();
+  // enemies.update();
 
   players.velocity.x = 0;
   enemies.velocity.x = 0;
 
   if (keys.a.pressed && players.lastKey === "a") {
     players.velocity.x = -5;
+    players.animationSwitch('run')
   } else if (keys.d.pressed && players.lastKey === "d") {
     players.velocity.x = 5;
+    players.animationSwitch('run')
+  } else {
+    players.animationSwitch('idle')
+  }
+
+  if (players.velocity.y < 0) {
+    players.animationSwitch('jump')
+  } else if (players.velocity.y > 0) {
+    players.animationSwitch('fall')
   }
 
   //enemy

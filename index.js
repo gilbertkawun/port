@@ -58,9 +58,17 @@ const players = new Fighters({
       imgSrc: './sprites/player-1/Attack1.png',
       framesMax: 4
     }
+  },
+  attack: {
+    offset: {
+      x: 150,
+      y: 50,
+    },
+    width: 150,
+    height: 50
   }
 });
-
+ 
 const enemies = new Fighters({
   position: {
     x: 576,
@@ -75,6 +83,46 @@ const enemies = new Fighters({
     y: 0,
   },
   color: "blue",
+  imgSrc: './sprites/player-2/Idle.png',
+  framesMax: 11,
+  scale: 2.5,
+  offset: {
+    x: 200,
+    y: 150
+  },
+  sprites: {
+    idle: {
+      imgSrc: './sprites/player-2/Idle.png',
+      framesMax: 11
+    },
+    run: {
+      imgSrc: './sprites/player-2/Run.png',
+      framesMax: 8
+    },
+    jump: {
+      imgSrc: './sprites/player-2/Jump.png',
+      framesMax: 3
+    },
+    fall: {
+      imgSrc: './sprites/player-2/Fall.png',
+      framesMax: 3
+    },
+    attack1: {
+      imgSrc: './sprites/player-2/Attack1.png',
+      framesMax: 7
+    },
+    takeHit: {
+      imgSrc: './sprites/player-2/Take Hit.png'
+    }
+  },
+  attack: {
+    offset: {
+      x: -150,
+      y: 50,
+    },
+    width: 150,
+    height: 50
+  }
 });
 
 const keys = {
@@ -107,7 +155,7 @@ function animate() {
   ce.fillRect(0, 0, canvas.width, canvas.height);
   background.update()
   players.update();
-  // enemies.update();
+  enemies.update();
 
   players.velocity.x = 0;
   enemies.velocity.x = 0;
@@ -131,8 +179,18 @@ function animate() {
   //enemy
   if (keys.ArrowLeft.pressed && enemies.lastKey === "ArrowLeft") {
     enemies.velocity.x = -5;
+    enemies.animationSwitch('run')
   } else if (keys.ArrowRight.pressed && enemies.lastKey === "ArrowRight") {
     enemies.velocity.x = 5;
+    enemies.animationSwitch('run')
+  } else {
+    enemies.animationSwitch('idle')
+  }
+
+  if (enemies.velocity.y < 0) {
+    enemies.animationSwitch('jump')
+  } else if (enemies.velocity.y > 0) {
+    enemies.animationSwitch('fall')
   }
 
   // collision
@@ -141,11 +199,16 @@ function animate() {
       obj1: players,
       obj2: enemies,
     }) &&
-    players.onAttack
+    players.onAttack && players.framesCurrent === 2
   ) {
     players.onAttack = false;
     enemies.health -= 20;
     document.querySelector("#enemyHealth").style.width = enemies.health + "%";
+  }
+
+  // miss attack
+  if (players.onAttack && players.framesCurrent === 2) {
+    players.onAttack = false
   }
 
   if (
@@ -153,12 +216,17 @@ function animate() {
       obj1: enemies,
       obj2: players,
     }) &&
-    enemies.onAttack
+    enemies.onAttack && enemies.framesCurrent === 1
   ) {
     enemies.onAttack = false;
     players.health -= 20;
     document.querySelector("#playerHealth").style.width = players.health + "%";
   }
+
+    // miss attack
+    if (enemies.onAttack && enemies.framesCurrent === 1) {
+      enemies.onAttack = false
+    }
 
   // result
   if (enemies.health <= 0 || players.health <= 0) {
@@ -197,7 +265,7 @@ window.addEventListener("keydown", (click) => {
       enemies.velocity.y = -18;
       break;
     case "ArrowDown":
-      enemies.onAttack = true;
+      enemies.attacking();
       break;
   }
 });
